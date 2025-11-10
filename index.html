@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Paper Package Calculator</title>
+    <style>
+      body {
+        font-family: "Segoe UI", sans-serif;
+        background: linear-gradient(135deg, #f0f4ff, #e0f7fa);
+        margin: 0;
+        padding: 10px;
+      }
+      .container {
+        max-width: 100%;
+        margin: auto;
+        background: #fff;
+        padding: 15px;
+        border-radius: 12px;
+        box-shadow: 0 5px 12px rgba(0, 0, 0, 0.1);
+      }
+      h2 {
+        text-align: center;
+        color: #0d47a1;
+        font-size: 22px;
+        margin-bottom: 15px;
+      }
+      .table-wrapper {
+        width: 100%;
+        margin-bottom: 15px;
+        overflow-x: auto;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+      th,
+      td {
+        padding: 8px;
+        text-align: center;
+        border-bottom: 1px solid #ddd;
+        font-size: 14px;
+      }
+      th {
+        background: linear-gradient(90deg, #0d47a1, #1976d2);
+        color: #fff;
+        font-weight: 600;
+      }
+      tr:nth-child(even) {
+        background: #f1f9ff;
+      }
+      tr:hover {
+        background: #dbeeff;
+      }
+      input,
+      select {
+        border-radius: 5px;
+        border: 1px solid #ccc;
+        font-size: 14px;
+        transition: all 0.2s;
+        padding: 5px;
+      }
+      input:focus,
+      select:focus {
+        border-color: #42a5f5;
+        box-shadow: 0 0 6px rgba(66, 165, 245, 0.3);
+        outline: none;
+      }
+      .note {
+        color: #e53935;
+        text-align: center;
+        margin: 6px 0;
+        font-weight: 500;
+        font-size: 14px;
+      }
+      #resultTable h3 {
+        color: #0d47a1;
+        font-size: 18px;
+        text-align: center;
+        margin-bottom: 8px;
+      }
+      /* Smaller page & qty input, larger select */
+      .pageQty {
+        width: 22px;
+        font-size: 13px;
+      }
+      .paperMaterial {
+        width: 140px;
+        font-size: 14px;
+      }
+
+      @media (max-width: 480px) {
+        h2 {
+          font-size: 20px;
+        }
+        table,
+        th,
+        td {
+          font-size: 13px;
+        }
+        input.pageQty,
+        select.paperMaterial {
+          width: 100%;
+          margin-bottom: 5px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h2>📄 Paper Package Calculator</h2>
+
+      <div class="table-wrapper">
+        <table>
+          <tr>
+            <td><label>Number of Books:</label></td>
+            <td colspan="3">
+              <input
+                type="number"
+                id="numBooks"
+                placeholder="Enter number of books"
+                oninput="createBookTable()"
+              />
+            </td>
+          </tr>
+        </table>
+      </div>
+
+      <div id="bookTableContainer" class="table-wrapper"></div>
+      <div class="note" id="noteMsg"></div>
+
+      <div id="resultTable" style="display: none">
+        <h3>📊 Calculation Result</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>Paper + Material</th>
+              <th>Total Pages</th>
+              <th>Total Packages</th>
+              <th>Total Packages (+20%)</th>
+            </tr>
+          </thead>
+          <tbody id="resultBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <script>
+      function createBookTable() {
+        const num = parseInt(document.getElementById("numBooks").value);
+        const container = document.getElementById("bookTableContainer");
+        container.innerHTML = "";
+        if (isNaN(num) || num <= 0) return;
+
+        let html = `<table id="bookTable"><thead>
+<tr><th>Book #</th><th>Pages</th><th>Qty</th><th>Type</th><th>Material</th><th>Total</th></tr>
+</thead><tbody>`;
+
+        for (let i = 1; i <= num; i++) {
+          html += `<tr>
+<td>${i}</td>
+<td><input type="number" id="pages${i}" class="pageQty" placeholder="0" oninput="updateCalculation()"></td>
+<td><input type="number" id="qty${i}" class="pageQty" placeholder="0" oninput="updateCalculation()"></td>
+<td><select id="paper${i}" class="paperMaterial" onchange="updateCalculation()"><option value="A3">A3</option><option value="A4">A4</option></select></td>
+<td><select id="material${i}" class="paperMaterial" onchange="updateCalculation()"><option value="GL">GL</option><option value="WF">WF</option><option value="MT">MT</option></select></td>
+<td id="total${i}">0</td>
+</tr>`;
+        }
+        html += "</tbody></table>";
+        container.innerHTML = html;
+        updateCalculation();
+      }
+
+      // Simple paper rules for packages
+      function getSheetsPerPack(type, material) {
+        if (type === "A3" && material === "GL") return 100;
+        if (type === "A3" && material === "WF") return 500;
+        if (type === "A3" && material === "MT") return 250;
+        if (type === "A4" && material === "WF") return 500;
+        if (type === "A4" && material === "MT") return 250;
+        if (type === "A4" && material === "GL") return 100;
+        return 100;
+      }
+
+      function updateCalculation() {
+        const numBooks = parseInt(document.getElementById("numBooks").value);
+        const resultBody = document.getElementById("resultBody");
+        const resultTable = document.getElementById("resultTable");
+        if (isNaN(numBooks) || numBooks <= 0) return;
+
+        const totals = {};
+
+        for (let i = 1; i <= numBooks; i++) {
+          const pages = parseInt(
+            document.getElementById("pages" + i)?.value || 0
+          );
+          const qty = parseInt(document.getElementById("qty" + i)?.value || 0);
+          const paper = document.getElementById("paper" + i).value;
+          const material = document.getElementById("material" + i).value;
+
+          let subtotal = pages * qty;
+
+          document.getElementById("total" + i).innerText = subtotal;
+
+          const key = paper + "-" + material;
+          if (!totals[key])
+            totals[key] = {
+              pages: 0,
+              sheetsPerPack: getSheetsPerPack(paper, material),
+            };
+          totals[key].pages += subtotal;
+        }
+
+        // Add GL cover automatically
+        let totalBooks = 0;
+        for (let i = 1; i <= numBooks; i++) {
+          const qty = parseInt(document.getElementById("qty" + i)?.value || 0);
+          totalBooks += qty;
+        }
+        if (totalBooks > 0) {
+          const key = "A3-GL";
+          if (!totals[key])
+            totals[key] = {
+              pages: 0,
+              sheetsPerPack: getSheetsPerPack("A3", "GL"),
+            };
+          totals[key].pages += totalBooks; // 1 sheet per book
+        }
+
+        resultBody.innerHTML = "";
+        for (const key in totals) {
+          const t = totals[key];
+          const basePackages = Math.ceil(t.pages / t.sheetsPerPack);
+          const totalWith20 = Math.ceil(basePackages * 1.2);
+          resultBody.innerHTML += `<tr>
+<td>${key}</td>
+<td>${t.pages}</td>
+<td>${basePackages}</td>
+<td>${totalWith20}</td>
+</tr>`;
+        }
+
+        if (Object.keys(totals).length > 0) resultTable.style.display = "block";
+      }
+    </script>
+  </body>
+</html>
