@@ -1,360 +1,589 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <meta charset="UTF-8" />
-    <meta
-      name="viewport"
-      content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"
-    />
-    <title style="  font-weight: bold;">📄 Paper Package & Cost Calculator</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>📄 Paper Package & Cost Calculator</title>
     <link
       href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
       rel="stylesheet"
     />
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"
+      rel="stylesheet"
+    />
     <style>
+      /* ===== Body & Container ===== */
       body {
-        font-family: "Segoe UI", sans-serif;
-        background: #eef2f6;
-        padding: 5px;
+        font-family: "Segoe UI", Arial, sans-serif;
+        background: linear-gradient(135deg, #e8f7ff, #fdfdfd);
+        padding: 20px;
+        margin-bottom: 200px;
       }
-
       .container {
         background: #fff;
-        padding: 10px;
-        border-radius: 8px;
-        box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
-        margin-bottom: 20px;
-        max-width: 100%;
+        padding: 25px;
+        border-radius: 16px;
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
       }
 
-      h2 {
-        font-size: 1.5rem;
+      /* ===== Titles & Cards ===== */
+      .main-title {
+        font-weight: 800;
+        font-size: 1.9rem;
+        text-align: center;
+        color: #0d6efd;
+        margin-bottom: 25px;
+      }
+      .book-card {
+        border: none;
+        border-radius: 12px;
+        padding: 15px;
+        margin-bottom: 15px;
+        background: #f0f8ff;
+        box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
+        transition: 0.3s;
+      }
+      .book-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+      }
+      .book-card.expensive {
+        border: 2px solid #ffc107;
+        background: #fff3cd;
+      }
+      .book-card label {
+        font-weight: 600;
+        color: #495057;
       }
 
-      /* Table styling */
-      table {
+      /* ===== Summary Cards ===== */
+      #summaryCards .card {
+        transition: all 0.5s ease;
+      }
+      #summaryCards .card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+      }
+
+      /* ===== History ===== */
+      #historyArea {
+        position: fixed;
+        bottom: 0;
+        left: 0;
         width: 100%;
-        table-layout: fixed;
-        border-collapse: collapse;
-        font-size: 0.75rem;
+        max-height: 300px;
+        background: #f8f9fa;
+        border-top: 3px solid #0d6efd;
+        padding: 15px 20px;
+        overflow-y: auto;
+        z-index: 999;
+        box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.15);
+        transition: 0.3s;
       }
-
-      th,
-      td {
-        border: 1px solid #aeacac;
+      #historyCards table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+      #historyCards th,
+      #historyCards td {
+        padding: 8px 10px;
+        font-size: 0.9rem;
         text-align: center;
         vertical-align: middle;
-        padding: 2px 4px;
-        word-wrap: break-word;
+      }
+      #historyCards th {
+        background-color: #0d6efd;
+        color: #fff;
+        position: sticky;
+        top: 0;
+      }
+      .history-card:hover {
+        background-color: #d1e7ff;
+        cursor: pointer;
+        transition: background 0.2s;
+      }
+      .history-card.selected {
+        background-color: #0d6efd;
+        color: #fff;
+      }
+      #historyCards button {
+        width: 100%;
+        margin-top: 10px;
       }
 
-      /* Book # column fixed width */
-      th:first-child,
-      td:first-child {
-        width: 50px;
-        min-width: 50px;
-        font-weight: bold;
-        background-color: #f2f2f2;
+      /* ===== Responsive ===== */
+      @media (max-width: 767px) {
+        .book-card .col-md-1,
+        .book-card .col-md-2,
+        .book-card .col-md-3 {
+          flex: 0 0 100%;
+          max-width: 100%;
+        }
+        .book-card {
+          padding: 12px;
+        }
       }
-
-      input,
-      select {
-        font-size: 0.7rem;
-        padding: 3px;
+      @media print {
+        #bookTableContainer,
+        #numBooks,
+        #btnCalculate,
+        #toggleHistory,
+        button {
+          display: none !important;
+        }
+        body {
+          margin: 0.5mm;
+        }
       }
-
-      .summary-box {
-        font-size: 0.9rem;
-      }
-
-      .summary-box .border {
-        border: 1px solid #007bff;
-        border-radius: 8px;
-        background-color: #f8f9fa;
-        padding: 10px;
-      }
-
-      .summary-box strong {
-        font-size: 1.1rem;
-        color: #007bff;
-        
-      }
-
-      .table-wrapper {
-        overflow-x: auto;
-      }
-
-  @media print {
-  body {
-    margin: 0;
-    padding: 0;
-    background: #fff;
-    font-family: "Segoe UI", Arial, sans-serif;
-  }
-
-  .container {
-    box-shadow: none;
-    border-radius: 0;
-    padding: 8px 15px;
-  }
-
-  /* TABLE */
-  table {
-    width: 100% !important;
-    border-collapse: collapse !important;
-    table-layout: fixed;
-    font-size: 11pt;
-    border: 1px solid #444 !important; /* reduced border */
-  }
-
-  thead th {
-    font-weight: bold;
-    background: #f2f2f2 !important;
-    border: 1px solid #444 !important; /* reduced border */
-    padding: 5px 3px !important;
-    text-transform: uppercase;
-  }
-
-  tbody td {
-    border: 1px solid #444 !important; /* reduced border */
-    padding: 4px 3px !important;
-    text-align: center;
-    vertical-align: middle;
-    word-wrap: break-word;
-  }
-
-  tr {
-    page-break-inside: avoid;
-  }
-
-  thead {
-    display: table-header-group;
-  }
-
-  tfoot {
-    display: table-footer-group;
-  }
-
-  /* INPUTS */
-  input,
-  select {
-    font-size: 11pt !important;
-    padding: 2px 3px !important;
-    border: 1px solid #555 !important; /* reduced border */
-  }
-
-  /* SUMMARY */
-  .summary-box .border {
-    border: 1px solid #444 !important; /* reduced border */
-    background-color: #fff !important;
-    padding: 6px !important;
-    box-sizing: border-box;
-  }
-
-  /* REMOVE SCREEN ELEMENTS */
-  .no-print,
-  .btn,
-  button {
-    display: none !important;
-  }
-
-  /* TITLE */
-  .report-title {
-    text-align: center;
-    font-size: 18pt;
-    font-weight: bold;
-    margin-bottom: 10px;
-  }
-}
-
-  .main-title {
-  font-weight: 800;
-  font-size: 1.6rem;
-  text-align: center;
-  padding: 12px 0;
-  color: #0d6efd;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  border-bottom: 3px solid #0d6efd;
-  margin-bottom: 20px;
-
-  /* subtle shadow effect */
-  text-shadow: 1px 1px 2px rgba(0,0,0,0.15);
-}
-
     </style>
   </head>
   <body>
     <div class="container">
-     <h5 class="main-title">📄 Paper Package & Cost Calculator</h5>
+      <div class="main-title">
+        <i class="fa-solid fa-book"></i> Paper Package & Cost Calculator
+      </div>
 
+      <div class="mb-3 d-flex justify-content-between align-items-center">
+        <button
+          id="toggleHistory"
+          class="btn btn-info no-print"
+          style="margin: 3px"
+        >
+          <i class="fa-solid fa-clock-rotate-left"></i> Show / Hide History
+        </button>
+      </div>
 
       <div class="mb-3">
-        <label class="form-label">Number of Books:</label>
-        <input type="number" id="numBooks" class="form-control" min="1" />
+        <label class="form-label fw-bold"
+          ><i class="fa-solid fa-list-ol"></i> Number of Books:</label
+        >
+        <input
+          id="numBooks"
+          class="form-control"
+          type="number"
+          min="1"
+          placeholder="Enter number of books"
+          required
+        />
       </div>
 
-      <div id="bookTableContainer" class="table-wrapper"></div>
+      <div id="bookTableContainer"></div>
 
-      <div id="resultTable" class="table-wrapper mt-3" style="display: none">
-        <h4>📊 Calculation Result</h4>
-        <table class="table table-bordered table-hover table-sm">
-          <thead class="table-primary">
-            <tr>
-              <th>Book #</th>
-              <th>Paper + Material</th>
-              <th>Total Sheets</th>
-              <th>Cover Sheets</th>
-              <th>Cover GL Packs</th>
-              <th>Binding Type</th>
-              <th>Price per Book ($)</th>
-            </tr>
-          </thead>
-          <tbody id="resultBody"></tbody>
-        </table>
-<div id="summaryBox" class="summary-box card p-3 mt-3" style="display: none;">
-  <h5 class="text-primary fw-bold">📌 Summary</h5>
-  <div class="row">
-    <div class="col-6 col-md-3 mb-2">
-      <div class="border p-2 rounded text-center">
-        <div class="fw-bold">Total Books</div>
-        <strong id="sumTotalBooks" class="fw-bold">0</strong>
-      </div>
-    </div>
-    <div class="col-6 col-md-3 mb-2">
-      <div class="border p-2 rounded text-center">
-        <div class="fw-bold">Total Cover Sheets</div>
-        <strong id="sumCoverSheets" class="fw-bold">0</strong>
-      </div>
-    </div>
-    <div class="col-6 col-md-3 mb-2">
-      <div class="border p-2 rounded text-center">
-        <div class="fw-bold">Total GL Packs</div>
-        <strong id="sumCoverGL" class="fw-bold">0</strong>
-      </div>
-    </div>
-    <div class="col-6 col-md-3 mb-2">
-      <div class="border p-2 rounded text-center">
-        <div class="fw-bold">Total Cost ($)</div>
-        <strong id="sumTotalCost" class="fw-bold">0.00</strong>
-      </div>
-    </div>
-  </div>
-</div>
+      <button id="btnCalculate" class="btn btn-primary mb-3">
+        <i class="fa-solid fa-equals"></i> Save / Calculate
+      </button>
 
+      <div id="resultArea" style="display: none">
+        <h5 class="mt-3">
+          <i class="fa-solid fa-chart-column"></i> Calculation Result
+        </h5>
+        <div class="table-responsive mb-3">
+          <table class="table table-sm table-bordered text-center">
+            <thead class="table-primary">
+              <tr>
+                <th>#</th>
+                <th>Pages</th>
+                <th>Qty</th>
+                <th>Paper</th>
+                <th>Material</th>
+                <th>Bind</th>
+                <th>Price</th>
+              </tr>
+            </thead>
+            <tbody id="resultBody"></tbody>
+          </table>
+        </div>
+
+        <h5 class="mt-3 text-warning">
+          <i class="fa-solid fa-box-open"></i> Paper Packs Needed
+        </h5>
+        <div class="table-responsive mb-3">
+          <table class="table table-sm table-bordered">
+            <thead class="table-warning">
+              <tr>
+                <th>Paper Type</th>
+                <th>Total Sheets</th>
+                <th>Packs Needed</th>
+              </tr>
+            </thead>
+            <tbody id="packBody"></tbody>
+          </table>
+        </div>
+
+        <div id="summaryBox" class="mt-3">
+          <h5 class="fw-bold"><i class="fa-solid fa-star"></i> Summary</h5>
+          <div class="row g-3" id="summaryCards"></div>
+        </div>
+      </div>
+    </div>
+
+    <div id="historyArea" style="display: none">
+      <h5>History (click to restore)</h5>
+      <div id="historyCards"></div>
+    </div>
 
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <script>
-      const TonerCostPerSheet = 962 / 90000;
-      const InsideBookCostA4 = 31 / 4000;
-      const InsideBookCostA3 = 31 / 2000;
-      const CoverCost = 18 / 400;
-      const LaminateCost = 8 / 400;
-      const BindingCost = 150 / 10000;
-      const StapleCost = (17 / 20 / 1000) * 2;
-      const coverPackCapacity = 100 * 4;
+      // ===== CONSTANTS =====
+      const TONER_COST_PER_SHEET = 962 / 90000,
+        INSIDE_COST_A4 = 31 / 4000,
+        INSIDE_COST_A3 = 31 / 2000,
+        COVER_COST = 18 / 400,
+        LAM_COST = 8 / 400,
+        BINDING_COST = 150 / 10000,
+        STAPLE_COST = (17 / 20 / 1000) * 2,
+        A4_PER_DAY = 50000,
+        PACK_WF_A4 = 500 * 8,
+        PACK_MT_A4 = 250 * 8,
+        PACK_A3 = 500 * 4,
+        COVER_PACK = 400;
 
-      function formatNumber(num) {
-        return num.toFixed(2);
-      }
+      let history = JSON.parse(localStorage.getItem("paperHistory")) || [];
+      let lastJobHash = "";
 
-      function createBookTable() {
-        const num = parseInt($("#numBooks").val());
-        const container = $("#bookTableContainer");
-        container.html("");
-        if (isNaN(num) || num <= 0) return;
+      // ===== HELPERS =====
+      const fmtInt = (n) => Number(n).toLocaleString();
+      const fmtPrice = (n) => "$" + Number(n).toFixed(2);
 
-        let html = `<table class="table table-bordered table-hover table-sm">
-          <thead class="table-primary">
-            <tr>
-              <th>Book #</th><th>Pages</th><th>Qty</th><th>Paper</th><th>Material</th><th>Binding</th>
-            </tr>
-          </thead><tbody>`;
-        for (let i = 1; i <= num; i++) {
-          html += `<tr>
-            <td>${i}</td>
-            <td><input type="number" id="pages${i}" class="form-control" min="1"></td>
-            <td><input type="number" id="qty${i}" class="form-control" min="1"></td>
-            <td><select id="paper${i}" class="form-select"><option value="A3">A3</option><option value="A4">A4</option></select></td>
-            <td><select id="material${i}" class="form-select"><option value="WF">WF</option><option value="MT">MT</option></select></td>
-            <td><select id="binding${i}" class="form-select"><option value="Perfect">Perfect</option><option value="Staple">Staple</option></select></td>
-          </tr>`;
+      function createBookTable(n) {
+        if (!n || n < 1) {
+          $("#bookTableContainer").html("");
+          $("#resultArea").hide();
+          return;
         }
-        html += "</tbody></table>";
-        container.html(html);
-        $("input, select").on("input change", updateCalculation);
+        let html = "";
+        for (let i = 1; i <= n; i++) {
+          html += `<div class="book-card row g-2" id="bookCard${i}">
+      <div class="col-12 col-md-1"><label>#${i}</label></div>
+      <div class="col-12 col-md-2"><label>Pages</label><input type="number" id="pages${i}" class="form-control" min="1" required/></div>
+      <div class="col-12 col-md-2"><label>Qty</label><input type="number" id="qty${i}" class="form-control" min="1" required/></div>
+      <div class="col-12 col-md-2"><label>Paper</label><select id="paper${i}" class="form-select"><option value="A4">A4</option><option value="A3">A3</option></select></div>
+      <div class="col-12 col-md-2"><label>Material</label><select id="material${i}" class="form-select"><option value="WF">WF</option><option value="MT">MT</option></select></div>
+      <div class="col-12 col-md-3"><label>Binding</label><input type="text" id="binding${i}" class="form-control" readonly/></div>
+    </div>`;
+        }
+        $("#bookTableContainer").html(html);
       }
 
-      function updateCalculation() {
-        const numBooks = parseInt($("#numBooks").val());
-        if (isNaN(numBooks) || numBooks <= 0) return;
+      // ===== CALCULATION =====
+      function calculateBooks(saveHistory = false) {
+        const n = parseInt($("#numBooks").val());
+        if (!n || n < 1) {
+          $("#resultArea").hide();
+          return;
+        }
 
-        const resultBody = $("#resultBody");
-        const summaryBox = $("#summaryBox");
-        resultBody.html("");
-        summaryBox.hide();
+        $("#resultBody,#packBody,#summaryCards").html("");
 
-        let totalBooks = 0,
+        let totalBooksQty = 0,
+          totalCost = 0,
           totalCoverSheets = 0,
-          totalCoverGL = 0,
-          totalCost = 0;
+          totalA4Pages = 0;
+        let sheetsWF = 0,
+          sheetsMT = 0,
+          sheetsA3 = 0;
+        let bookRows = [];
 
-        for (let i = 1; i <= numBooks; i++) {
+        for (let i = 1; i <= n; i++) {
           const pages = parseInt($("#pages" + i).val()) || 0;
           const qty = parseInt($("#qty" + i).val()) || 0;
           const paper = $("#paper" + i).val();
           const material = $("#material" + i).val();
-          const binding = $("#binding" + i).val();
+          const binding = paper === "A4" ? "Perfect" : "Staple";
+          $("#binding" + i).val(binding);
+
           if (pages <= 0 || qty <= 0) continue;
 
-          const sheets = Math.ceil(pages / 2);
-          const coverSheetsA4 = 4;
-          const totalTonerSheetsA4 =
-            paper === "A4"
-              ? sheets + coverSheetsA4
-              : sheets * 2 + coverSheetsA4;
-          const tonerCost = totalTonerSheetsA4 * TonerCostPerSheet;
+          const sheetsPerBook = Math.ceil(pages / 2);
+          const totalSheetsBook = sheetsPerBook * qty;
+          const tonerSheets =
+            paper === "A4" ? sheetsPerBook + 4 : sheetsPerBook * 2 + 4;
+          const tonerCost = tonerSheets * TONER_COST_PER_SHEET;
           const insideCost =
             paper === "A4"
-              ? sheets * InsideBookCostA4
-              : sheets * InsideBookCostA3;
-          const coverLaminate = CoverCost + LaminateCost;
-          const bindCost = binding === "Perfect" ? BindingCost : StapleCost;
+              ? sheetsPerBook * INSIDE_COST_A4
+              : sheetsPerBook * INSIDE_COST_A3;
           const pricePerBook =
-            tonerCost + insideCost + coverLaminate + bindCost;
+            tonerCost +
+            insideCost +
+            COVER_COST +
+            LAM_COST +
+            (binding === "Perfect" ? BINDING_COST : STAPLE_COST);
 
-          const totalCovers = qty * 1;
-          const coverGLPacks = Math.ceil(totalCovers / coverPackCapacity);
-
-          totalBooks += qty;
-          totalCoverSheets += totalCovers;
-          totalCoverGL += coverGLPacks;
+          totalBooksQty += qty;
           totalCost += pricePerBook * qty;
+          totalCoverSheets += qty;
+          totalA4Pages +=
+            paper === "A4" ? totalSheetsBook : totalSheetsBook * 2;
 
-          resultBody.append(`<tr>
-            <td>${i}</td>
-            <td>${paper} - ${material}</td>
-            <td>${sheets * qty}</td>
-            <td>${totalCovers}</td>
-            <td>${coverGLPacks}</td>
-            <td>${binding}</td>
-            <td>${formatNumber(pricePerBook)}</td>
-          </tr>`);
+          if (paper === "A4" && material === "WF") sheetsWF += totalSheetsBook;
+          if (paper === "A4" && material === "MT") sheetsMT += totalSheetsBook;
+          if (paper === "A3") sheetsA3 += totalSheetsBook;
+
+          bookRows.push({
+            pages,
+            qty,
+            paper,
+            material,
+            binding,
+            pricePerBook,
+            cardId: `#bookCard${i}`,
+          });
         }
 
-        if (totalBooks > 0) {
-          summaryBox.show();
-          $("#sumTotalBooks").text(totalBooks);
-          $("#sumCoverSheets").text(totalCoverSheets);
-          $("#sumCoverGL").text(totalCoverGL);
-          $("#sumTotalCost").text(formatNumber(totalCost));
-        }
+        bookRows.sort((a, b) => b.pricePerBook - b.pricePerBook);
 
-        $("#resultTable").show();
+        bookRows.forEach((b, i) => {
+          $(b.cardId).toggleClass("expensive", b.pricePerBook > 50);
+          $("#resultBody").append(`<tr>
+      <td>${i + 1}</td><td>${b.pages}</td><td>${fmtInt(b.qty)}</td><td>${
+            b.paper
+          }</td><td>${b.material}</td><td>${b.binding}</td><td>${fmtPrice(
+            b.pricePerBook
+          )}</td>
+    </tr>`);
+        });
+
+        const packsWF = sheetsWF > 0 ? Math.ceil(sheetsWF / PACK_WF_A4) : 0;
+        const packsMT = sheetsMT > 0 ? Math.ceil(sheetsMT / PACK_MT_A4) : 0;
+        const packsA3 = sheetsA3 > 0 ? Math.ceil(sheetsA3 / PACK_A3) : 0;
+        const coverPacks =
+          totalCoverSheets > 0 ? Math.ceil(totalCoverSheets / COVER_PACK) : 0;
+        const totalDays = Math.ceil(totalA4Pages / A4_PER_DAY);
+
+        if (sheetsWF > 0)
+          $("#packBody").append(
+            `<tr><td>A4-WF</td><td>${fmtInt(sheetsWF)}</td><td>${fmtInt(
+              packsWF
+            )}</td></tr>`
+          );
+        if (sheetsMT > 0)
+          $("#packBody").append(
+            `<tr><td>A4-MT</td><td>${fmtInt(sheetsMT)}</td><td>${fmtInt(
+              packsMT
+            )}</td></tr>`
+          );
+        if (sheetsA3 > 0)
+          $("#packBody").append(
+            `<tr><td>A3-WF</td><td>${fmtInt(sheetsA3)}</td><td>${fmtInt(
+              packsA3
+            )}</td></tr>`
+          );
+        if (totalCoverSheets > 0)
+          $("#packBody").append(
+            `<tr><td>Cover GL</td><td>${fmtInt(
+              totalCoverSheets
+            )}</td><td>${fmtInt(coverPacks)}</td></tr>`
+          );
+
+        // ===== SUMMARY CARDS =====
+        const cards = [
+          {
+            title: "Total Books",
+            icon: "fa-solid fa-book",
+            value: fmtInt(totalBooksQty),
+            color: "primary",
+          },
+          {
+            title: "Total Days",
+            icon: "fa-solid fa-clock",
+            value: fmtInt(totalDays),
+            color: "info",
+          },
+          {
+            title: "Total Cost",
+            icon: "fa-solid fa-dollar-sign",
+            value: fmtPrice(totalCost),
+            color: "danger",
+          },
+          {
+            title: "Cover Packs",
+            icon: "fa-solid fa-box",
+            value: fmtInt(coverPacks),
+            color: "warning",
+          },
+        ];
+        if (packsWF > 0)
+          cards.push({
+            title: "A4 WF Packs",
+            icon: "fa-solid fa-cubes",
+            value: fmtInt(packsWF),
+            color: "success",
+          });
+        if (packsMT > 0)
+          cards.push({
+            title: "A4 MT Packs",
+            icon: "fa-solid fa-cubes-stacked",
+            value: fmtInt(packsMT),
+            color: "secondary",
+          });
+        if (packsA3 > 0)
+          cards.push({
+            title: "A3 WF Packs",
+            icon: "fa-solid fa-boxes-stacked",
+            value: fmtInt(packsA3),
+            color: "dark",
+          });
+
+        $("#summaryCards").html("");
+        cards.forEach((c) => {
+          const col = $(`<div class="col-12 col-sm-6 col-md-3 mb-3"></div>`);
+          const card = $(`
+      <div class="card text-white bg-${c.color} h-100 shadow-sm">
+        <div class="card-body text-center">
+          <i class="${c.icon} fa-2x mb-2"></i>
+          <h6 class="card-title fw-bold">${c.title}</h6>
+          <p class="card-text fs-5 fw-bold">${c.value}</p>
+        </div>
+      </div>
+    `);
+          col.append(card);
+          $("#summaryCards").append(col);
+        });
+
+        $("#resultArea").show();
+
+        if (saveHistory)
+          saveWorkHistory(
+            n,
+            totalBooksQty,
+            totalCost,
+            totalDays,
+            sheetsWF,
+            sheetsMT,
+            sheetsA3,
+            totalCoverSheets,
+            packsWF,
+            packsMT,
+            packsA3,
+            coverPacks,
+            bookRows
+          );
       }
 
-      $("#numBooks").on("input", createBookTable);
+      // ===== HISTORY & EXPORT =====
+      function saveWorkHistory(
+        n,
+        totalBooksQty,
+        totalCost,
+        totalDays,
+        sheetsWF,
+        sheetsMT,
+        sheetsA3,
+        totalCoverSheets,
+        packsWF,
+        packsMT,
+        packsA3,
+        coverPacks,
+        bookRows
+      ) {
+        const hash = btoa(
+          bookRows
+            .map((b) => `${b.pages}|${b.qty}|${b.paper}|${b.material}`)
+            .join(";")
+        );
+        if (hash === lastJobHash) return;
+        lastJobHash = hash;
+
+        const work = {
+          date: new Date().toLocaleString(),
+          n,
+          totalBooksQty,
+          totalCost,
+          totalDays,
+          sheetsWF,
+          sheetsMT,
+          sheetsA3,
+          totalCoverSheets,
+          packsWF,
+          packsMT,
+          packsA3,
+          coverPacks,
+          bookRows,
+        };
+        history.unshift(work);
+        if (history.length > 20) history.pop();
+        localStorage.setItem("paperHistory", JSON.stringify(history));
+        renderHistory();
+      }
+
+      function renderHistory() {
+        if (history.length === 0) {
+          $("#historyCards").html("");
+          return;
+        }
+
+        let html = `</tbody></table>
+    <div class="d-flex justify-content-between mt-2">
+      <button class="btn btn-success" onclick="downloadHistoryExcel()">
+        <i class="fa-solid fa-file-excel"></i> Download Excel
+      </button>
+      <button class="btn btn-secondary" onclick="$('#historyArea').hide()">
+        <i class="fa-solid fa-eye-slash"></i> Hide History
+      </button>
+    </div>
+  </div>`;
+        html += `<div class="table-responsive">
+    <table class="table table-hover table-striped align-middle">
+      
+      <thead>
+        <tr>
+          <th>#</th><th>Date</th><th>Total Books</th><th>Total Days</th>
+          <th>Total Cost</th><th>Cover Packs</th><th>A4 WF</th><th>A4 MT</th><th>A3 WF</th>
+        </tr>
+      </thead>
+      <tbody>`;
+
+        history.forEach((w, i) => {
+          html += `<tr class="history-card" onclick="restoreWork(${i}, this)">
+      <td>${i + 1}</td>
+      <td>${w.date}</td>
+      <td>${fmtInt(w.totalBooksQty)}</td>
+      <td>${fmtInt(w.totalDays)}</td>
+      <td>${fmtPrice(w.totalCost)}</td>
+      <td>${fmtInt(w.coverPacks)}</td>
+      <td>${fmtInt(w.packsWF)}</td>
+      <td>${fmtInt(w.packsMT)}</td>
+      <td>${fmtInt(w.packsA3)}</td>
+    </tr>`;
+        });
+
+        $("#historyCards").html(html);
+      }
+
+      function restoreWork(i, row) {
+        const w = history[i];
+        $("#numBooks").val(w.n);
+        createBookTable(w.n);
+        for (let j = 1; j <= w.n; j++) {
+          $("#pages" + j).val(w.bookRows[j - 1].pages);
+          $("#qty" + j).val(w.bookRows[j - 1].qty);
+          $("#paper" + j).val(w.bookRows[j - 1].paper);
+          $("#material" + j).val(w.bookRows[j - 1].material);
+        }
+        calculateBooks(false);
+        // Highlight
+        $("#historyCards tr").removeClass("selected");
+        $(row).addClass("selected");
+      }
+
+      // ===== EVENT HANDLERS =====
+      $("#numBooks").on("input change", () =>
+        createBookTable(parseInt($("#numBooks").val()))
+      );
+      $(document).on(
+        "input change",
+        "#bookTableContainer input,#bookTableContainer select",
+        () => calculateBooks(false)
+      );
+      $("#btnCalculate").click(() => calculateBooks(true));
+      $("#toggleHistory").click(() => $("#historyArea").toggle());
+
+      // ===== INIT =====
+      createBookTable(parseInt($("#numBooks").val()));
+      renderHistory();
     </script>
   </body>
 </html>
