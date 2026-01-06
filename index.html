@@ -144,6 +144,56 @@
           margin: 0.5mm;
         }
       }
+  /* ===== HISTORY AREA ===== */
+  #historyArea {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    max-height: 280px;
+    background: #f8f9fa;
+    border-top: 3px solid #0d6efd;
+    padding: 15px 20px;
+    overflow-y: auto;
+    z-index: 999;
+    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.15);
+    transition: 0.3s;
+    border-radius: 12px 12px 0 0;
+  }
+
+  .history-card {
+    background-color: #e7f1ff;
+    border-radius: 8px;
+    padding: 10px 12px;
+    margin-bottom: 6px;
+    font-size: 0.9rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+  }
+
+  .history-card:hover {
+    background-color: #cce5ff;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+  }
+
+  .history-card.selected {
+    background-color: #0d6efd;
+    color: #fff;
+    font-weight: 600;
+  }
+
+  /* ===== Hide toggle button on print ===== */
+  @media print {
+    #toggleHistory, #historyArea {
+      display: none !important;
+    }
+  }
+
+
     </style>
   </head>
   <body>
@@ -155,8 +205,8 @@
   
 
       <div class="mb-3 d-flex justify-content-between align-items-center">
-        <button id="toggleHistory" class="btn btn-info no-print">
-          <i class="fa-solid fa-clock-rotate-left"></i> Show / Hide History
+        <button id="toggleHistory" class="btn btn-outline-primary no-print">
+          <i class="fa-solid fa-clock-rotate-left"></i> History
         </button>
       </div>
 
@@ -177,7 +227,7 @@
       <div id="bookTableContainer"></div>
 
       <button id="btnCalculate" class="btn btn-primary mb-3">
-        <i class="fa-solid fa-equals"></i> Save / Calculate
+        <i class="fa fa-calculator"></i> Save / Calculate
       </button>
 
       <div id="resultArea" style="display: none">
@@ -226,7 +276,7 @@
         <input id="dailyCapacitySlider" type="range" class="form-range capacity-slider" min="1000" max="100000" step="1000" value="50000">
         <span>Total Days: <b id="totalDaysDisplay">0</b></span>
       </div>
-      
+
         <div id="summaryBox" class="mt-3">
           <div class="d-flex justify-content-between align-items-center mb-2">
             <h5 class="fw-bold mb-0">
@@ -238,10 +288,28 @@
       </div>
     </div>
 
-    <div id="historyArea" style="display: none">
-      <h5>History (click to restore)</h5>
-      <div id="historyCards"></div>
-    </div>
+ 
+
+
+<!-- ===== HISTORY AREA ===== -->
+<div id="historyArea" style="display: none">
+  <div class="d-flex justify-content-between align-items-center mb-2">
+    <h5 style="margin:0;">📜 History (click to restore)</h5>
+    <button id="hideHistoryBtn" class="btn btn-sm btn-secondary">
+      <i class="fa-solid fa-xmark"></i> Close
+    </button>
+  </div>
+  <div id="historyCards" style="max-height: 220px; overflow-y: auto;"></div>
+</div>
+
+<script>
+  // ===== Hide history button =====
+  $("#hideHistoryBtn").on("click", function() {
+    $("#historyArea").hide();
+  });
+</script>
+
+
 
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script>
@@ -408,6 +476,9 @@
       $("#toggleHistory").on("click", function () {
         $("#historyArea").toggle();
       });
+        $("#hideHistoryBtn").on("click", function() {
+    $("#historyArea").hide();
+  });
 
       $("#historyCards").on("click", ".history-card", function () {
         const index = $(this).data("index");
